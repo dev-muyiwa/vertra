@@ -4,6 +4,8 @@ include(
     "domain",
     "application",
     "infrastructure",
-    "adapter-web",
-    "adapter-postgres"
+    "adapters:web",
+    "adapters:persistence"
 )
+project(":adapters:web").projectDir = file("adapters/web")
+project(":adapters:persistence").projectDir = file("adapters/persistence")

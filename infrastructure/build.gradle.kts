@@ -8,8 +8,8 @@ plugins {
 dependencies {
     implementation(project(":domain"))
     implementation(project(":application"))
-    implementation(project(":adapter-postgres"))
-    implementation(project(":adapter-web"))
+    implementation(project(":adapters:persistence"))
+    implementation(project(":adapters:web"))
 
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-web")
