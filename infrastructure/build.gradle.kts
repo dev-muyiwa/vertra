@@ -10,27 +10,40 @@ dependencies {
     implementation(project(":application"))
     implementation(project(":adapters:persistence"))
     implementation(project(":adapters:web"))
+    implementation(project(":adapters:security"))
 
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
-    implementation("io.jsonwebtoken:jjwt-api:0.13.0")
-    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.13.0")
-    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.13.0")
+    implementation("io.micrometer:micrometer-registry-prometheus:1.12.0")
 
-    developmentOnly("org.springframework.boot:spring-boot-devtools")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+
+//    developmentOnly("org.springframework.boot:spring-boot-devtools")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation(project(":domain"))
+    testImplementation(project(":application"))
 }
 
 tasks.bootJar {
     archiveFileName.set("vertra.jar")
+    mainClass.set("com.vertra.VertraApplication")
+}
+
+tasks.jar {
+    enabled = false
 }
 
 springBoot {
-    mainClass.set("com.vertra.infrastructure.VertraApplication" )
+    buildInfo {
+        properties {
+            time = null
+        }
+    }
 }
+
+description = "Vertra Infrastructure - Main Spring Boot application"

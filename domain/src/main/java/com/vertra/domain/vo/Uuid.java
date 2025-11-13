@@ -1,7 +1,6 @@
 package com.vertra.domain.vo;
 
 
-
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;

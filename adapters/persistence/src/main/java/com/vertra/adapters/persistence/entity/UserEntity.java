@@ -1,22 +1,30 @@
 package com.vertra.adapters.persistence.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.time.Instant;
 import java.util.UUID;
 
 @Getter
 @Setter
-@Entity(name = "users")
-@Table(name = "users")
+@Entity
+@Table(
+        name = "users",
+        indexes = {
+                @Index(name = "idx_users_email", columnList = "email")
+        }
+)
+@Builder(toBuilder = true)
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", nullable = false)
+    @UuidGenerator
+    @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
     @Column(name = "first_name", nullable = false)
@@ -39,6 +47,12 @@ public class UserEntity {
 
     @Column(name = "last_login_at")
     private Instant lastLoginAt;
+
+    @Column(name = "locked_until")
+    private Instant lockedUntil;
+
+    @Column(name = "failed_login_attempts", nullable = false, columnDefinition = "INT DEFAULT 0")
+    private int failedLoginAttempts;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

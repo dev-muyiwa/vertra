@@ -1,8 +1,0 @@
--- liquibase formatted sql
-
--- changeset DELL:1762047756703-1
-CREATE TABLE users (id UUID NOT NULL, first_name VARCHAR(255) NOT NULL, last_name VARCHAR(255) NOT NULL, email VARCHAR(255) NOT NULL, password_hash VARCHAR(255) NOT NULL, has_accepted_terms BOOLEAN NOT NULL, email_verified_at TIMESTAMP WITHOUT TIME ZONE, last_login_at TIMESTAMP WITHOUT TIME ZONE, created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL, deleted_at TIMESTAMP WITHOUT TIME ZONE, CONSTRAINT pk_users PRIMARY KEY (id));
-
--- changeset DELL:1762047756703-2
-ALTER TABLE users ADD CONSTRAINT uc_users_email UNIQUE (email);
-

@@ -1,6 +1,10 @@
 package com.vertra.domain.model.audit;
 
+import lombok.Getter;
+
+@Getter
 public enum AuditAction {
+    USER_CREATED("user.created"),
     USER_LOGIN("user.login"),
     USER_LOGIN_FAILED("user.login.failed"),
     USER_LOGOUT("user.logout"),
@@ -39,10 +43,6 @@ public enum AuditAction {
 
     AuditAction(String value) {
         this.value = value;
-    }
-
-    public String getValue() {
-        return value;
     }
 
     @Override

@@ -29,7 +29,7 @@ public class AuditLog {
     String requestId;
     Map<String, Object> metadata;
     Boolean success;
-    String errorMessage;
+    String message;
 
     Instant createdAt;
 }

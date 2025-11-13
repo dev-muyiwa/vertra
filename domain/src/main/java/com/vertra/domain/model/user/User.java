@@ -1,25 +1,41 @@
 package com.vertra.domain.model.user;
 
-import com.vertra.domain.vo.Email;
-import com.vertra.domain.vo.HashedPassword;
-import com.vertra.domain.vo.Uuid;
 import lombok.Builder;
+import lombok.Getter;
 
 import java.time.Instant;
+import java.util.UUID;
 
+@Getter
 @Builder(toBuilder = true)
-public record User(
-        Uuid id,
-        String firstName,
-        String lastName,
-        Email email,
-        HashedPassword passwordHash,
-        boolean hasAcceptedTerms,
-        Instant emailVerifiedAt,
-        Instant lastLoginAt,
-        Instant createdAt,
-        Instant updatedAt,
-        Instant deletedAt
+public class User {
+    private UUID id;
+    private String firstName;
+    private String lastName;
+    private String email;
+    private String passwordHash;
+    private boolean hasAcceptedTerms;
+    private Instant emailVerifiedAt;
 
-) {
+    private Instant lockedUntil;
+    private int failedLoginAttempts;
+
+    private Instant lastLoginAt;
+    private Instant createdAt;
+    private Instant updatedAt;
+    private Instant deletedAt;
+
+    public boolean isLocked() {
+        return lockedUntil != null && lockedUntil.isAfter(Instant.now());
+    }
+
+    public boolean isDeleted() {
+        return deletedAt != null;
+    }
+
+    public void recordLogin() {
+        this.lastLoginAt = Instant.now();
+        this.failedLoginAttempts = 0;
+        this.lockedUntil = null;
+    }
 }
