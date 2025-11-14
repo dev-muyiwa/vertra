@@ -65,7 +65,7 @@ public class LoginUserService implements LoginUserUseCase {
             throw UnauthorizedException.invalidCredentials();
         }
 
-        String accessToken = tokenGen.generateAccessToken(existingUser.getId(), existingUser.getEmail(), new HashMap<>());
+        String accessToken = tokenGen.generateAccessToken(existingUser.getId(), new HashMap<>());
         String refreshToken = tokenGen.generateRefreshToken();
         String jti = tokenGen.extractJti(accessToken);
 

@@ -35,7 +35,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 if (claims.valid()) {
                     UserPrincipal userPrincipal = UserPrincipal.builder()
                             .id(claims.userId())
-                            .email(claims.email())
                             .active(true)
 //                            .accountLocked(false)
                             .build();
@@ -53,7 +52,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                    log.debug("User authenticated via JWT: {}", claims.email());
+                    log.debug("User authenticated via JWT: {}", claims.jti());
                 } else {
                     log.warn("Invalid JWT token");
                 }

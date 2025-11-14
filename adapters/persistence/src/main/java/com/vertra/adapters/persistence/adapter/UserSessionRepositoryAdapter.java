@@ -1,5 +1,8 @@
 package com.vertra.adapters.persistence.adapter;
 
+import com.vertra.adapters.persistence.entity.UserSessionEntity;
+import com.vertra.adapters.persistence.mapper.UserSessionEntityMapper;
+import com.vertra.adapters.persistence.repository.JpaUserSessionRepository;
 import com.vertra.application.port.out.persistence.UserSessionRepository;
 import com.vertra.domain.model.user.UserSession;
 import com.vertra.domain.vo.HashedToken;
@@ -15,9 +18,18 @@ import java.util.Optional;
 @Component
 @RequiredArgsConstructor
 public class UserSessionRepositoryAdapter implements UserSessionRepository {
+
+    private final JpaUserSessionRepository jpaRepo;
+    private final UserSessionEntityMapper mapper;
+
     @Override
     public UserSession save(UserSession session) {
-        return null;
+        log.debug("Saving user session {}", session.id());
+
+        UserSessionEntity entity = mapper.toEntity(session);
+        UserSessionEntity savedEntity = jpaRepo.save(entity);
+
+        return mapper.toDomain(savedEntity);
     }
 
     @Override

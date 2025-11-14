@@ -58,9 +58,9 @@ public class UserRepositoryAdapter implements UserRepository {
     public void delete(Uuid id) {
         log.debug("Deleting user by id: {}", id);
 
-        int deleted = jpaRepo.delete(id.value());
-        if (deleted == 0) {
-            log.warn("No user deleted for id: {}", id);
+        boolean deleted = jpaRepo.delete(id.value());
+        if (!deleted) {
+            log.warn("User with id {} not found or already deleted", id);
         }
     }
 }

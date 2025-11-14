@@ -9,7 +9,7 @@ liquibase {
             "changelogFile" to "adapters/persistence/src/main/resources/db/changelog/db.changelog-master.xml",
             "url" to (project.findProperty("liquibaseUrl") as String?
                 ?: System.getenv("DB_URL")
-                ?: "jdbc:postgresql://localhost:5432/vertra"),
+                ?: "jdbc:postgresql://localhost:5432/vertra-db"),
             "username" to (project.findProperty("liquibaseUsername") as String?
                 ?: System.getenv("DB_USERNAME")
                 ?: "postgres"),

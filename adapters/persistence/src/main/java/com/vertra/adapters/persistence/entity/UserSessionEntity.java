@@ -1,8 +1,7 @@
 package com.vertra.adapters.persistence.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.Instant;
@@ -20,6 +19,9 @@ import java.util.UUID;
                 @Index(name = "idx_user_sessions_active", columnList = "user_id, revoked_at")
         }
 )
+@Builder(toBuilder = true)
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserSessionEntity {
     @Id
     @UuidGenerator

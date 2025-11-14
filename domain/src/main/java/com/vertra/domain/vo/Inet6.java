@@ -1,8 +1,10 @@
 package com.vertra.domain.vo;
 
-import java.net.Inet6Address;
+import org.jetbrains.annotations.NotNull;
 
-public record Inet6(Inet6Address address) {
+import java.net.InetAddress;
+
+public record Inet6(InetAddress address) {
     public Inet6 {
         if (address == null) {
             throw new IllegalArgumentException("Address must be a valid IPv6 address");
@@ -11,10 +13,14 @@ public record Inet6(Inet6Address address) {
 
     public static Inet6 parse(String ip) {
         try {
-            Inet6Address address = (Inet6Address) Inet6Address.getByName(ip);
-            return new Inet6(address);
+            return new Inet6(InetAddress.getByName(ip));
         } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid IPv6 address: " + ip, e);
+            throw new IllegalArgumentException("Invalid IP address: " + ip, e);
         }
+    }
+
+    @Override
+    public @NotNull String toString() {
+        return address.getHostAddress();
     }
 }

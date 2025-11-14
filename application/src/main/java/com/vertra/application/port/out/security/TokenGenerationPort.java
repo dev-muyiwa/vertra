@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface TokenGenerationPort {
 
-    String generateAccessToken(UUID userId, String email, Map<String, Object> claims);
+    String generateAccessToken(UUID userId, Map<String, Object> claims);
 
     String generateRefreshToken();
 
@@ -19,7 +19,6 @@ public interface TokenGenerationPort {
 
     record TokenClaims(
             UUID userId,
-            String email,
             String jti,
             Instant issuedAt,
             Instant expiresAt,

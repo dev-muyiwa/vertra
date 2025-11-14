@@ -16,7 +16,7 @@ public record RegisterUserRequest(
         @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$", message = "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character")
         String password,
 
-        @AssertTrue
+        @AssertTrue(message = "You must accept the terms and conditions")
         boolean hasAcceptedTerms
 ) {
 }

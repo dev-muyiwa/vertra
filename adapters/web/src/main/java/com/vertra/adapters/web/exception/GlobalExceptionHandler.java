@@ -32,7 +32,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(ErrorResponse.of(
-                        HttpStatus.NOT_FOUND.value(),
                         "Not Found",
                         ex.getMessage(),
                         request.getRequestURI()
@@ -49,7 +48,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(ErrorResponse.of(
-                        HttpStatus.UNAUTHORIZED.value(),
                         "Unauthorized",
                         ex.getMessage(),
                         request.getRequestURI()
@@ -65,7 +63,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
                 .body(ErrorResponse.of(
-                        HttpStatus.FORBIDDEN.value(),
                         "Forbidden",
                         ex.getMessage(),
                         request.getRequestURI()
@@ -82,7 +79,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(ErrorResponse.of(
-                        HttpStatus.CONFLICT.value(),
                         "Conflict",
                         ex.getMessage(),
                         request.getRequestURI()
@@ -99,7 +95,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponse.of(
-                        HttpStatus.BAD_REQUEST.value(),
                         "Validation Error",
                         ex.getMessage(),
                         request.getRequestURI()
@@ -118,7 +113,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponse.of(
-                        HttpStatus.BAD_REQUEST.value(),
                         "Bad Request",
                         message,
                         request.getRequestURI()
@@ -135,9 +129,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponse.of(
-                        HttpStatus.BAD_REQUEST.value(),
                         "Bad Request",
-                        ex.getMessage(),
+                        "Request body is malformed or unreadable",
                         request.getRequestURI()
                 ));
     }
@@ -158,7 +151,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponse.withValidation(
-                        HttpStatus.BAD_REQUEST.value(),
                         "Validation Failed",
                         "Request validation failed",
                         request.getRequestURI(),
@@ -180,7 +172,6 @@ public class GlobalExceptionHandler {
                 .header("X-RateLimit-Reset", String.valueOf(ex.getResetAt().getEpochSecond()))
                 .header("Retry-After", String.valueOf(ex.getSecondsUntilReset()))
                 .body(ErrorResponse.of(
-                        HttpStatus.TOO_MANY_REQUESTS.value(),
                         "Too Many Requests",
                         ex.getMessage(),
                         request.getRequestURI()
@@ -197,7 +188,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponse.of(
-                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
                         "Encryption Error",
                         "An error occurred during encryption",
                         request.getRequestURI()
@@ -214,7 +204,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponse.of(
-                        HttpStatus.BAD_REQUEST.value(),
                         "Invalid Key",
                         ex.getMessage(),
                         request.getRequestURI()
@@ -231,7 +220,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(ErrorResponse.of(
-                        HttpStatus.UNAUTHORIZED.value(),
                         "Authentication Failed",
                         ex.getMessage(),
                         request.getRequestURI()
@@ -248,7 +236,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
                 .body(ErrorResponse.of(
-                        HttpStatus.FORBIDDEN.value(),
                         "Access Denied",
                         ex.getMessage(),
                         request.getRequestURI()
@@ -265,7 +252,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponse.of(
-                        HttpStatus.BAD_REQUEST.value(),
                         "Bad Request",
                         ex.getMessage(),
                         request.getRequestURI()
@@ -282,7 +268,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponse.of(
-                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
                         "Internal Server Error",
                         "An unexpected error occurred",
                         request.getRequestURI()

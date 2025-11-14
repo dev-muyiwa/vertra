@@ -41,13 +41,12 @@ public class JwtTokenGeneratorAdapter implements TokenGenerationPort {
     }
 
     @Override
-    public String generateAccessToken(UUID userId, String email, Map<String, Object> claims) {
+    public String generateAccessToken(UUID userId, Map<String, Object> claims) {
         Instant now = Instant.now();
         Instant expiry = now.plusMillis(expirationMs);
 
         return Jwts.builder()
                 .subject(userId.toString())
-                .claim("email", email)
                 .id(Uuid.random().toString())
                 .issuer(issuer)
                 .issuedAt(Date.from(now))
@@ -75,7 +74,6 @@ public class JwtTokenGeneratorAdapter implements TokenGenerationPort {
 
             return new TokenClaims(
                     UUID.fromString(claims.getSubject()),
-                    claims.get("email", String.class),
                     claims.getId(),
                     claims.getIssuedAt().toInstant(),
                     claims.getExpiration().toInstant(),
@@ -83,10 +81,10 @@ public class JwtTokenGeneratorAdapter implements TokenGenerationPort {
             );
         } catch (ExpiredJwtException e) {
             log.warn("JWT token expired: {}", e.getMessage());
-            return new TokenClaims(null, null, null, null, null, false);
+            return new TokenClaims(null, null, null, null,  false);
         } catch (JwtException e) {
             log.error("JWT parsing failed", e);
-            return new TokenClaims(null, null, null, null, null, false);
+            return new TokenClaims(null, null, null, null, false);
         }
     }
 

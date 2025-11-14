@@ -3,6 +3,7 @@ package com.vertra.adapters.persistence.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
 
@@ -19,6 +20,7 @@ import java.util.UUID;
         }
 )
 @Builder(toBuilder = true)
+@DynamicInsert
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserEntity {
@@ -39,7 +41,7 @@ public class UserEntity {
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
-    @Column(name = "has_accepted_terms", nullable = false)
+    @Column(name = "has_accepted_terms", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
     private boolean hasAcceptedTerms;
 
     @Column(name = "email_verified_at")
