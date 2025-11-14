@@ -29,4 +29,22 @@ public class AsyncConfig {
 
         return executor;
     }
+
+    @Bean(name = "auditExecutor")
+    public Executor auditExecutor() {
+        log.info("Initializing Audit Task Executor");
+
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(5);
+        executor.setQueueCapacity(50);
+        executor.setThreadNamePrefix("vertra-audit-");
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.setAwaitTerminationSeconds(30);
+        executor.setRejectedExecutionHandler((r,e) -> log.warn("Audit task {} rejected - queue is full, executing in caller thread", r.toString()));
+        executor.initialize();
+
+        return executor;
+    }
 }

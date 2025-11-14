@@ -11,6 +11,7 @@ dependencies {
     implementation(project(":adapters:persistence"))
     implementation(project(":adapters:web"))
     implementation(project(":adapters:security"))
+    implementation(project(":adapters:audit"))
 
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
