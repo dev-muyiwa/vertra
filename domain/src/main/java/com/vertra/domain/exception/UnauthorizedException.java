@@ -28,4 +28,8 @@ public class UnauthorizedException extends DomainException {
     public static UnauthorizedException accountDeactivated() {
         return new UnauthorizedException("Account has been deactivated");
     }
+
+    public static UnauthorizedException notAuthenticated() {
+        return new UnauthorizedException("User not authenticated");
+    }
 }

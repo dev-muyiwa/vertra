@@ -64,6 +64,13 @@ public class JwtTokenGeneratorAdapter implements TokenGenerationPort {
     }
 
     @Override
+    public String generateToken() {
+        byte[] randomBytes = new byte[32];
+        secureRandom.nextBytes(randomBytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
+    }
+
+    @Override
     public TokenClaims parseToken(String token) {
         try {
             Claims claims = Jwts.parser()

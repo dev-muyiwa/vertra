@@ -37,5 +37,11 @@ public class User {
         this.lastLoginAt = Instant.now();
         this.failedLoginAttempts = 0;
         this.lockedUntil = null;
+        this.updatedAt = Instant.now();
+    }
+
+    public void markEmailAsVerified() {
+        this.emailVerifiedAt = Instant.now();
+        this.updatedAt = Instant.now();
     }
 }

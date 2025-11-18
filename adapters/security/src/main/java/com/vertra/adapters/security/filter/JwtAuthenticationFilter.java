@@ -29,33 +29,36 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String jwt = extractJwtFromRequest(request);
 
-            if (jwt != null) {
-                TokenGenerationPort.TokenClaims claims = tokenGen.parseToken(jwt);
+            if (jwt == null) {
+                log.debug("No JWT token found in request");
+                filterChain.doFilter(request, response);
+            }
 
-                if (claims.valid()) {
-                    UserPrincipal userPrincipal = UserPrincipal.builder()
-                            .id(claims.userId())
-                            .active(true)
+            TokenGenerationPort.TokenClaims claims = tokenGen.parseToken(jwt);
+
+            if (claims.valid()) {
+                UserPrincipal userPrincipal = UserPrincipal.builder()
+                        .id(claims.userId())
+                        .active(true)
 //                            .accountLocked(false)
-                            .build();
+                        .build();
 
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(
-                                    userPrincipal,
-                                    null
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                userPrincipal,
+                                null
 //                                    userPrincipal.getAuthorities()
-                            );
+                        );
 
-                    authentication.setDetails(
-                            new WebAuthenticationDetailsSource().buildDetails(request)
-                    );
+                authentication.setDetails(
+                        new WebAuthenticationDetailsSource().buildDetails(request)
+                );
 
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                    log.debug("User authenticated via JWT: {}", claims.jti());
-                } else {
-                    log.warn("Invalid JWT token");
-                }
+                log.debug("User authenticated via JWT: {}", claims.jti());
+            } else {
+                log.warn("Invalid JWT token");
             }
         } catch (Exception e) {
             log.error("Could not set user authentication in security context", e);

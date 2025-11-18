@@ -2,12 +2,14 @@ package com.vertra.adapters.web.controller;
 
 import com.vertra.adapters.web.dto.request.auth.LoginUserRequest;
 import com.vertra.adapters.web.dto.request.auth.RegisterUserRequest;
+import com.vertra.adapters.web.dto.request.auth.StartEmailVerificationRequest;
 import com.vertra.adapters.web.dto.response.auth.LoginUserResponse;
 import com.vertra.adapters.web.dto.response.auth.RegisterUserResponse;
 import com.vertra.adapters.web.dto.response.common.ApiResponse;
 import com.vertra.adapters.web.mapper.AuthDtoMapper;
 import com.vertra.application.port.in.auth.LoginUserUseCase;
 import com.vertra.application.port.in.auth.RegisterUserUseCase;
+import com.vertra.application.port.in.auth.StartEmailVerificationUseCase;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,8 @@ public class AuthController {
 
     private final RegisterUserUseCase registerUserUseCase;
     private final LoginUserUseCase loginUserUseCase;
+    private final StartEmailVerificationUseCase startEmailVerificationUseCase;
+
     private final AuthDtoMapper mapper;
 
     @PostMapping("/register")
@@ -53,6 +57,21 @@ public class AuthController {
 
         return ResponseEntity
                 .ok(ApiResponse.success(res, "User logged in successfully"));
+    }
+
+    @PostMapping("/start-verification")
+    public ResponseEntity<ApiResponse<Void>> verifyEmail(
+            @Valid @RequestBody StartEmailVerificationRequest data,
+            HttpServletRequest req
+            ) {
+        var cmd = mapper.toStartEmailVerificationCommand(
+                data,
+                getClientIp(req),
+                req.getHeader("User-Agent")
+        );
+        startEmailVerificationUseCase.execute(cmd);
+        return ResponseEntity
+                .ok(ApiResponse.success(null, "Email verification started successfully"));
     }
 
     //    TODO("Move to a utility class that would be reusable across controllers")

@@ -2,6 +2,8 @@ package com.vertra.adapters.security.config;
 
 import com.vertra.adapters.security.filter.JwtAuthenticationFilter;
 import com.vertra.adapters.security.filter.RLSContextFilter;
+import com.vertra.adapters.security.handler.DelegatingAccessDeniedHandler;
+import com.vertra.adapters.security.handler.DelegatingAuthenticationEntryPoint;
 import com.vertra.adapters.security.provider.VertraAuthenticationProvider;
 import com.vertra.adapters.security.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +11,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -33,9 +36,11 @@ public class SecurityConfig {
     private final RLSContextFilter rlsContextFilter;
     private final CustomUserDetailsService detailsService;
     private final VertraAuthenticationProvider authenticationProvider;
+    private final DelegatingAuthenticationEntryPoint authenticationEntryPoint;
+    private final DelegatingAccessDeniedHandler accessDeniedHandler;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, DaoAuthenticationProvider provider) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
@@ -45,35 +50,16 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+                .authenticationProvider(provider)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/register", "/auth/login").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/**").permitAll()
                         .requestMatchers("/actuator/prometheus").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(e -> e
-                        .authenticationEntryPoint((request, response, authException) -> {
-                            response.setStatus(401);
-                            response.setContentType("application/json");
-                            response.getWriter().write(String.format("""
-                                    {
-                                        "error": "Unauthorized",
-                                        "message": "Authentication required",
-                                        "path": "%s"
-                                    }
-                                    """, request.getRequestURI()));
-                        })
-                        .accessDeniedHandler((request, response, accessDeniedException) -> {
-                            response.setStatus(403);
-                            response.setContentType("application/json");
-                            response.getWriter().write(String.format("""
-                                    {
-                                        "error": "Forbidden",
-                                        "message": "Insufficient permissions",
-                                        "path": "%s"
-                                    }
-                                    """, request.getRequestURI()));
-                        })
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler)
                 );
 
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
@@ -120,13 +106,14 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authManager(HttpSecurity http) throws Exception {
-        AuthenticationManagerBuilder builder =
-                http.getSharedObject(AuthenticationManagerBuilder.class);
+    public AuthenticationManager authManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
 
-        builder.authenticationProvider(authenticationProvider);
-        builder.userDetailsService(detailsService);
-
-        return builder.build();
+    @Bean
+    public DaoAuthenticationProvider daoAuthenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(detailsService);
+        provider.setHideUserNotFoundExceptions(false);
+        return provider;
     }
 }

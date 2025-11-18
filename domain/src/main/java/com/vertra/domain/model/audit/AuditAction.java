@@ -8,6 +8,10 @@ public enum AuditAction {
     USER_LOGIN("user.login"),
     USER_LOGIN_FAILED("user.login.failed"),
     USER_LOGOUT("user.logout"),
+    EMAIL_VERIFICATION_STARTED("email.verification.started"),
+    EMAIL_VERIFICATION_ATTEMPT("email.verification.attempt"),
+    EMAIL_VERIFICATION_FAILED("email.verification.failed"),
+    EMAIL_VERIFIED("email.verified"),
     USER_PASSWORD_CHANGED("user.password.changed"),
 
     ORG_CREATED("org.created"),

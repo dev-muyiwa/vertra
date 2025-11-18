@@ -1,11 +1,13 @@
 package com.vertra.domain.exception;
 
+import java.util.UUID;
+
 public class ResourceNotFoundException extends RuntimeException {
     public ResourceNotFoundException(String message) {
         super(message);
     }
 
-    public static ResourceNotFoundException user(String identifier) {
+    public static ResourceNotFoundException user(UUID identifier) {
         return new ResourceNotFoundException("User not found: " + identifier);
     }
 

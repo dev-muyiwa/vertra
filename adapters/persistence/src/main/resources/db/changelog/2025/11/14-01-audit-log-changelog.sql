@@ -18,12 +18,3 @@ CREATE INDEX idx_audit_logs_resource ON audit_logs(resource_type, resource_id);
 -- changeset DELL:1763102739433-12
 CREATE INDEX idx_audit_logs_timestamp ON audit_logs(timestamp DESC);
 
--- changeset DELL:1763102739433-2
-CREATE INDEX idx_user_sessions_refresh_token_hash ON user_sessions(refresh_token_hash);
-
--- changeset DELL:1763102739433-4
-CREATE INDEX idx_user_sessions_session_token_hash ON user_sessions(session_token_hash);
-
--- changeset DELL:1763102739433-6
-CREATE INDEX idx_users_email ON users(email);
-

@@ -2,10 +2,12 @@ package com.vertra.adapters.web.mapper;
 
 import com.vertra.adapters.web.dto.request.auth.LoginUserRequest;
 import com.vertra.adapters.web.dto.request.auth.RegisterUserRequest;
+import com.vertra.adapters.web.dto.request.auth.StartEmailVerificationRequest;
 import com.vertra.adapters.web.dto.response.auth.LoginUserResponse;
 import com.vertra.adapters.web.dto.response.auth.RegisterUserResponse;
 import com.vertra.application.port.in.auth.LoginUserUseCase;
 import com.vertra.application.port.in.auth.RegisterUserUseCase;
+import com.vertra.application.port.in.auth.StartEmailVerificationUseCase;
 import com.vertra.domain.vo.Email;
 import com.vertra.domain.vo.Inet6;
 import org.springframework.stereotype.Component;
@@ -46,15 +48,23 @@ public class AuthDtoMapper {
 
     public LoginUserResponse toLoginResponse(LoginUserUseCase.LoginUserResponse result) {
         return new LoginUserResponse(
-                result.accessToken(),
-                result.refreshToken(),
-                result.expiresIn(),
-                new LoginUserResponse.UserInfo(
-                        result.user().id(),
-                        result.user().firstName(),
-                        result.user().lastName(),
-                        result.user().email()
+                result.user().id(),
+                result.user().firstName(),
+                result.user().lastName(),
+                result.user().email(),
+                new LoginUserResponse.SessionToken(
+                        result.accessToken(),
+                        result.refreshToken(),
+                        result.expiresIn()
                 )
+        );
+    }
+
+    public StartEmailVerificationUseCase.StartEmailVerificationCommand toStartEmailVerificationCommand(StartEmailVerificationRequest request, String ipAddress, String userAgent) {
+        return new StartEmailVerificationUseCase.StartEmailVerificationCommand(
+                request.redirectPath(),
+                Inet6.parse(ipAddress),
+                userAgent
         );
     }
 

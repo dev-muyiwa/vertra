@@ -1,8 +1,5 @@
 package com.vertra.application.port.out.security;
 
-import com.vertra.domain.vo.Email;
-import com.vertra.domain.vo.Uuid;
-
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
@@ -12,6 +9,8 @@ public interface TokenGenerationPort {
     String generateAccessToken(UUID userId, Map<String, Object> claims);
 
     String generateRefreshToken();
+
+    String generateToken();
 
     TokenClaims parseToken(String token);
 
