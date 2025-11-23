@@ -7,6 +7,7 @@ public record LoginUserResponse(
         String firstName,
         String lastName,
         String email,
+        boolean hasVerifiedAccount,
         SessionToken token
 ) {
     public record SessionToken(

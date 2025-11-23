@@ -102,7 +102,8 @@ public class LoginUserService implements LoginUserUseCase {
                         existingUser.getId(),
                         existingUser.getFirstName(),
                         existingUser.getLastName(),
-                        existingUser.getEmail()
+                        existingUser.getEmail(),
+                        existingUser.getEmailVerifiedAt() != null
                 )
         );
     }

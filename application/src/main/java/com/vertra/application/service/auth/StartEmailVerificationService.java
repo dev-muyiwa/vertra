@@ -57,7 +57,6 @@ public class StartEmailVerificationService implements StartEmailVerificationUseC
                 expiryDuration
         );
 
-        tokenRepo.deleteByUserId(user.getId());
         tokenRepo.save(otp);
 
         try {

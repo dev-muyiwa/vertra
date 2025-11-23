@@ -3,11 +3,13 @@ package com.vertra.adapters.web.mapper;
 import com.vertra.adapters.web.dto.request.auth.LoginUserRequest;
 import com.vertra.adapters.web.dto.request.auth.RegisterUserRequest;
 import com.vertra.adapters.web.dto.request.auth.StartEmailVerificationRequest;
+import com.vertra.adapters.web.dto.request.auth.VerifyEmailRequest;
 import com.vertra.adapters.web.dto.response.auth.LoginUserResponse;
 import com.vertra.adapters.web.dto.response.auth.RegisterUserResponse;
 import com.vertra.application.port.in.auth.LoginUserUseCase;
 import com.vertra.application.port.in.auth.RegisterUserUseCase;
 import com.vertra.application.port.in.auth.StartEmailVerificationUseCase;
+import com.vertra.application.port.in.auth.VerifyEmailUseCase;
 import com.vertra.domain.vo.Email;
 import com.vertra.domain.vo.Inet6;
 import org.springframework.stereotype.Component;
@@ -52,6 +54,7 @@ public class AuthDtoMapper {
                 result.user().firstName(),
                 result.user().lastName(),
                 result.user().email(),
+                result.user().hasVerifiedAccount(),
                 new LoginUserResponse.SessionToken(
                         result.accessToken(),
                         result.refreshToken(),
@@ -68,4 +71,11 @@ public class AuthDtoMapper {
         );
     }
 
+    public VerifyEmailUseCase.VerifyEmailCommand toVerifyEmailCommand(VerifyEmailRequest request, String ipAddress, String userAgent) {
+        return new VerifyEmailUseCase.VerifyEmailCommand(
+                request.token(),
+                Inet6.parse(ipAddress),
+                userAgent
+        );
+    }
 }

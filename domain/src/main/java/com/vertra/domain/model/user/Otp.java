@@ -23,7 +23,6 @@ public class Otp {
     public static Otp create(UUID userId, String token, Duration expiryDuration) {
         Instant now = Instant.now();
         return Otp.builder()
-                .id(UUID.randomUUID())
                 .userId(userId)
                 .token(token)
                 .expiresAt(now.plus(expiryDuration))

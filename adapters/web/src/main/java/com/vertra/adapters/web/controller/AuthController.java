@@ -3,6 +3,7 @@ package com.vertra.adapters.web.controller;
 import com.vertra.adapters.web.dto.request.auth.LoginUserRequest;
 import com.vertra.adapters.web.dto.request.auth.RegisterUserRequest;
 import com.vertra.adapters.web.dto.request.auth.StartEmailVerificationRequest;
+import com.vertra.adapters.web.dto.request.auth.VerifyEmailRequest;
 import com.vertra.adapters.web.dto.response.auth.LoginUserResponse;
 import com.vertra.adapters.web.dto.response.auth.RegisterUserResponse;
 import com.vertra.adapters.web.dto.response.common.ApiResponse;
@@ -10,6 +11,7 @@ import com.vertra.adapters.web.mapper.AuthDtoMapper;
 import com.vertra.application.port.in.auth.LoginUserUseCase;
 import com.vertra.application.port.in.auth.RegisterUserUseCase;
 import com.vertra.application.port.in.auth.StartEmailVerificationUseCase;
+import com.vertra.application.port.in.auth.VerifyEmailUseCase;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ public class AuthController {
     private final RegisterUserUseCase registerUserUseCase;
     private final LoginUserUseCase loginUserUseCase;
     private final StartEmailVerificationUseCase startEmailVerificationUseCase;
+    private final VerifyEmailUseCase verifyEmailUseCase;
 
     private final AuthDtoMapper mapper;
 
@@ -71,7 +74,22 @@ public class AuthController {
         );
         startEmailVerificationUseCase.execute(cmd);
         return ResponseEntity
-                .ok(ApiResponse.success(null, "Email verification started successfully"));
+                .ok(ApiResponse.success(null, "Account verification started successfully"));
+    }
+
+    @PostMapping("/complete-verification")
+    public ResponseEntity<ApiResponse<Void>> completeEmailVerification(
+            @Valid @RequestBody VerifyEmailRequest data,
+            HttpServletRequest req
+    ) {
+        var cmd = mapper.toVerifyEmailCommand(
+                data,
+                getClientIp(req),
+                req.getHeader("User-Agent")
+        );
+        verifyEmailUseCase.execute(cmd);
+        return ResponseEntity
+                .ok(ApiResponse.success(null, "Account verified successfully"));
     }
 
     //    TODO("Move to a utility class that would be reusable across controllers")

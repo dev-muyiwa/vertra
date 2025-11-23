@@ -1,5 +1,6 @@
 package com.vertra.adapters.security.adapter;
 
+import com.vertra.adapters.security.UserPrincipal;
 import com.vertra.application.port.out.security.SecurityContextPort;
 import com.vertra.domain.exception.UnauthorizedException;
 import lombok.extern.slf4j.Slf4j;
@@ -15,8 +16,13 @@ public class SecurityContextAdapter implements SecurityContextPort {
     @Override
     public UUID getCurrentUserId() {
         Authentication auth = getAuthenticationOrThrow();
+        
+        if (auth.getPrincipal() instanceof UserPrincipal userPrincipal) {
+            return userPrincipal.getId();
+        }
+        
+        // Fallback: try to parse from name (for backward compatibility)
         String userIdStr = auth.getName();
-
         try {
             return UUID.fromString(userIdStr);
         } catch (IllegalArgumentException e) {

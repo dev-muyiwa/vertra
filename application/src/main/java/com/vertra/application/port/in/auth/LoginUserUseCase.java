@@ -35,7 +35,8 @@ public interface LoginUserUseCase {
                 UUID id,
                 String firstName,
                 String lastName,
-                String email
+                String email,
+                boolean hasVerifiedAccount
         ) {
         }
     }
