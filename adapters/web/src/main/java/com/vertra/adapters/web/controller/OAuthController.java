@@ -67,7 +67,7 @@ public class OAuthController {
 
     /**
      * Handle OAuth callback from provider.
-     * Client sends the access token obtained from OAuth provider.
+     * Backend validates state and exchanges authorization code for access token.
      *
      * Returns one of three responses:
      * - new_user: User needs to complete setup (generate keys on client)
@@ -82,9 +82,33 @@ public class OAuthController {
     ) {
         log.info("OAuth callback received: provider={}", provider);
 
+        // Validate state parameter for CSRF protection
+        if (!oAuthAuthorizationPort.validateState(request.state())) {
+            log.warn("Invalid or expired state parameter in OAuth callback");
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("Invalid or expired state parameter"));
+        }
+
+        // Exchange authorization code for access token on backend
+        OAuthProvider oauthProvider = OAuthProvider.fromString(provider);
+        String accessToken;
+        try {
+            accessToken = oAuthAuthorizationPort.exchangeCodeForToken(
+                    oauthProvider,
+                    request.code(),
+                    request.redirectUri()
+            );
+        } catch (Exception e) {
+            log.error("Failed to exchange authorization code for access token", e);
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("Failed to exchange authorization code: " + e.getMessage()));
+        }
+
         var command = new OAuthCallbackUseCase.OAuthCallbackCommand(
                 provider,
-                request.accessToken(),
+                accessToken,
                 request.deviceId(),
                 request.deviceName(),
                 request.deviceFingerprint(),
