@@ -89,7 +89,7 @@ public class LoginUserService implements LoginUserUseCase {
         userRepo.save(existingUser);
 
         auditPort.log(AuditAction.USER_LOGIN, null, existingUser.getId(), null, ActorType.USER,
-                null, null, null, cmd.ipAddress(), cmd.userAgent(), UUID.randomUUID(), Map.<String, Object>of("session_id", session.id().toString()),
+                null, null, null, cmd.ipAddress(), cmd.userAgent(), UUID.randomUUID(), Map.<String, Object>of("session_id", session.getId().toString()),
                 true, "User logged in successfully for email " + cmd.email().value());
 
         log.info("User logged in successfully for email {}", existingUser.getId());

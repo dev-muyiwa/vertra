@@ -31,6 +31,9 @@ public class UserSessionEntity {
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
+    @Column(name = "device_id")
+    private UUID deviceId;
+
     @Column(name = "session_token_hash", nullable = false, unique = true)
     private String sessionTokenHash;
 

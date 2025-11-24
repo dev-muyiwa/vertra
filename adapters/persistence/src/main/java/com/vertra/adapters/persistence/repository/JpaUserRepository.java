@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface JpaUserRepository extends JpaRepository<UserEntity, UUID> {
+
     @Query("SELECT u FROM UserEntity u WHERE u.email = :email AND u.deletedAt IS NULL")
     Optional<UserEntity> findUndeletedByEmail(@Param("email") String email);
 
@@ -18,6 +19,18 @@ public interface JpaUserRepository extends JpaRepository<UserEntity, UUID> {
 
     @Query("SELECT u FROM UserEntity u WHERE u.id = :id AND u.deletedAt IS NULL")
     Optional<UserEntity> findUndeletedById(@Param("id") UUID id);
+
+    @Query("SELECT u FROM UserEntity u WHERE u.oAuthProvider = :provider AND u.oAuthId = :oauthId AND u.deletedAt IS NULL")
+    Optional<UserEntity> findByOAuthProviderAndOAuthId(
+            @Param("provider") UserEntity.OAuthProviderEntity provider,
+            @Param("oauthId") String oauthId
+    );
+
+    @Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM UserEntity u WHERE u.oAuthProvider = :provider AND u.oAuthId = :oauthId AND u.deletedAt IS NULL")
+    boolean existsByOAuthProviderAndOAuthId(
+            @Param("provider") UserEntity.OAuthProviderEntity provider,
+            @Param("oauthId") String oauthId
+    );
 
     @Modifying
     @Query("UPDATE UserEntity u SET u.deletedAt = CURRENT_TIMESTAMP WHERE u.id = :id AND u.deletedAt IS NULL")

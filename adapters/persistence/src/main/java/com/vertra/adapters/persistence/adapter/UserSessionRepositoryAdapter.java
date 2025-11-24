@@ -24,7 +24,7 @@ public class UserSessionRepositoryAdapter implements UserSessionRepository {
 
     @Override
     public UserSession save(UserSession session) {
-        log.debug("Saving user session {}", session.id());
+        log.debug("Saving user session {}", session.getId());
 
         UserSessionEntity entity = mapper.toEntity(session);
         UserSessionEntity savedEntity = jpaRepo.save(entity);

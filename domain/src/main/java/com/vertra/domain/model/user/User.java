@@ -2,28 +2,42 @@ package com.vertra.domain.model.user;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Value;
+import lombok.With;
 
 import java.time.Instant;
 import java.util.UUID;
 
-@Getter
+@Value
+@With
 @Builder(toBuilder = true)
 public class User {
-    private UUID id;
-    private String firstName;
-    private String lastName;
-    private String email;
-    private String passwordHash;
-    private boolean hasAcceptedTerms;
-    private Instant emailVerifiedAt;
+    UUID id;
+    String firstName;
+    String lastName;
+    String email;
 
-    private Instant lockedUntil;
-    private int failedLoginAttempts;
+    // Legacy password field - null for OAuth users
+    String passwordHash;
 
-    private Instant lastLoginAt;
-    private Instant createdAt;
-    private Instant updatedAt;
-    private Instant deletedAt;
+    Instant emailVerifiedAt;
+
+    OAuthProvider oAuthProvider;
+    String oAuthId;
+    String profilePictureUrl;
+
+    // Zero-knowledge encryption fields
+    String accountPublicKey;  // RSA public key (plaintext)
+    String recoveryEncryptedPrivateKey;  // Private key encrypted with recovery key
+    String recoverySalt;
+
+    Instant lockedUntil;
+    int failedLoginAttempts;
+
+    Instant lastLoginAt;
+    Instant createdAt;
+    Instant updatedAt;
+    Instant deletedAt;
 
     public boolean isLocked() {
         return lockedUntil != null && lockedUntil.isAfter(Instant.now());
@@ -33,15 +47,32 @@ public class User {
         return deletedAt != null;
     }
 
-    public void recordLogin() {
-        this.lastLoginAt = Instant.now();
-        this.failedLoginAttempts = 0;
-        this.lockedUntil = null;
-        this.updatedAt = Instant.now();
+    public boolean isEmailVerified() {
+        return emailVerifiedAt != null;
     }
 
-    public void markEmailAsVerified() {
-        this.emailVerifiedAt = Instant.now();
-        this.updatedAt = Instant.now();
+    public boolean isOAuthUser() {
+        return oAuthProvider != null;
+    }
+
+    public User markEmailAsVerified() {
+        return this.withEmailVerifiedAt(Instant.now());
+    }
+
+    public User incrementFailedLoginAttempts() {
+        int newAttempts = this.failedLoginAttempts + 1;
+
+        if (newAttempts >= 5) {
+            return this.withFailedLoginAttempts(newAttempts)
+                    .withLockedUntil(Instant.now().plusSeconds(900)); // 15 minutes
+        }
+
+        return this.withFailedLoginAttempts(newAttempts);
+    }
+
+    public User recordLogin() {
+        return this.withLastLoginAt(Instant.now())
+                .withFailedLoginAttempts(0)
+                .withLockedUntil(null);
     }
 }

@@ -53,6 +53,9 @@ public class SecurityConfig {
                 .authenticationProvider(provider)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/auth/register", "/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/oauth/*/callback").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/oauth/complete-setup").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/oauth/recover-device").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/**").permitAll()
                         .requestMatchers("/actuator/prometheus").permitAll()
                         .anyRequest().authenticated()

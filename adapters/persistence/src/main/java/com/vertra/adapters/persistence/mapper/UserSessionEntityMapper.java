@@ -16,15 +16,18 @@ public class UserSessionEntityMapper {
         }
 
         return UserSessionEntity.builder()
-                .id(session.id())
-                .userId(session.userId())
-                .sessionTokenHash(session.sessionTokenHash().toString())
-                .refreshTokenHash(session.refreshTokenHash().toString())
-                .userAgent(session.userAgent())
-                .ipAddress(session.ipAddress().toString())
-                .expiresAt(session.expiresAt())
-                .createdAt(session.createdAt())
-                .revokedAt(session.revokedAt())
+                .id(session.getId())
+                .userId(session.getUserId())
+                .deviceId(session.getDeviceId())
+                .sessionTokenHash(session.getSessionTokenHash().toString())
+                .refreshTokenHash(session.getRefreshTokenHash().toString())
+                .userAgent(session.getUserAgent())
+                .ipAddress(session.getIpAddress() != null ? session.getIpAddress().toString() : null)
+                .deviceFingerprint(session.getDeviceFingerprint())
+                .expiresAt(session.getExpiresAt())
+                .lastActivityAt(session.getLastActivityAt())
+                .createdAt(session.getCreatedAt())
+                .revokedAt(session.getRevokedAt())
                 .build();
     }
 
@@ -36,11 +39,14 @@ public class UserSessionEntityMapper {
         return UserSession.builder()
                 .id(entity.getId())
                 .userId(entity.getUserId())
+                .deviceId(entity.getDeviceId())
                 .sessionTokenHash(new HashedToken(entity.getSessionTokenHash()))
                 .refreshTokenHash(new HashedToken(entity.getRefreshTokenHash()))
                 .userAgent(entity.getUserAgent())
                 .ipAddress(Inet6.parse(entity.getIpAddress()))
+                .deviceFingerprint(entity.getDeviceFingerprint())
                 .expiresAt(entity.getExpiresAt())
+                .lastActivityAt(entity.getLastActivityAt())
                 .createdAt(entity.getCreatedAt())
                 .revokedAt(entity.getRevokedAt())
                 .build();

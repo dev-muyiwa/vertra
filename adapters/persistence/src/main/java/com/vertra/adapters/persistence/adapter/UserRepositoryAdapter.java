@@ -4,6 +4,7 @@ import com.vertra.adapters.persistence.entity.UserEntity;
 import com.vertra.adapters.persistence.mapper.UserEntityMapper;
 import com.vertra.adapters.persistence.repository.JpaUserRepository;
 import com.vertra.application.port.out.persistence.UserRepository;
+import com.vertra.domain.model.user.OAuthProvider;
 import com.vertra.domain.model.user.User;
 import com.vertra.domain.vo.Email;
 import com.vertra.domain.vo.Uuid;
@@ -48,10 +49,25 @@ public class UserRepositoryAdapter implements UserRepository {
     }
 
     @Override
+    public Optional<User> findByOAuthProviderAndOAuthId(OAuthProvider provider, String oauthId) {
+        log.debug("Finding user by OAuth provider={} and oauthId={}", provider, oauthId);
+
+        return jpaRepo.findByOAuthProviderAndOAuthId(toEntityProvider(provider), oauthId)
+                .map(mapper::toDomain);
+    }
+
+    @Override
     public boolean existsByEmail(Email email) {
         log.debug("Checking existence of user by email: {}", email);
 
         return jpaRepo.existsByEmail(email.value());
+    }
+
+    @Override
+    public boolean existsByOAuthProviderAndOAuthId(OAuthProvider provider, String oauthId) {
+        log.debug("Checking existence by OAuth provider={} and oauthId={}", provider, oauthId);
+
+        return jpaRepo.existsByOAuthProviderAndOAuthId(toEntityProvider(provider), oauthId);
     }
 
     @Override
@@ -62,5 +78,16 @@ public class UserRepositoryAdapter implements UserRepository {
         if (!deleted) {
             log.warn("User with id {} not found or already deleted", id);
         }
+    }
+
+    private UserEntity.OAuthProviderEntity toEntityProvider(OAuthProvider provider) {
+        if (provider == null) {
+            return null;
+        }
+        return switch (provider) {
+            case GOOGLE -> UserEntity.OAuthProviderEntity.GOOGLE;
+            case GITHUB -> UserEntity.OAuthProviderEntity.GITHUB;
+            case MICROSOFT -> UserEntity.OAuthProviderEntity.MICROSOFT;
+        };
     }
 }

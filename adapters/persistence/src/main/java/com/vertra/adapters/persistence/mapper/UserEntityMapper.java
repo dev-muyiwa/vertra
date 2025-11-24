@@ -1,14 +1,13 @@
 package com.vertra.adapters.persistence.mapper;
 
 import com.vertra.adapters.persistence.entity.UserEntity;
+import com.vertra.domain.model.user.OAuthProvider;
 import com.vertra.domain.model.user.User;
-import com.vertra.domain.vo.Email;
-import com.vertra.domain.vo.HashedPassword;
-import com.vertra.domain.vo.Uuid;
 import org.springframework.stereotype.Component;
 
 @Component
 public class UserEntityMapper {
+
     public UserEntity toEntity(User user) {
         if (user == null) {
             return null;
@@ -18,14 +17,14 @@ public class UserEntityMapper {
                 .id(user.getId())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
-                .email(String.valueOf(user.getEmail()))
-                .emailVerifiedAt(user.getEmailVerifiedAt()) // change to isVerified on the domain model
-                .passwordHash(String.valueOf(user.getPasswordHash()))
-//                .publicKey(user.getPublicKey())
-//                .encryptedPrivateKey(user.getEncryptedPrivateKey())
-//                .privateKeyIv(user.getPrivateKeyIv())
-//                .keyDerivationSalt(user.getKeyDerivationSalt())
-//                .active(user.isActive())
+                .email(user.getEmail())
+                .oAuthProvider(toEntityProvider(user.getOAuthProvider()))
+                .oAuthId(user.getOAuthId())
+                .profilePictureUrl(user.getProfilePictureUrl())
+                .accountPublicKey(user.getAccountPublicKey())
+                .recoveryEncryptedPrivateKey(user.getRecoveryEncryptedPrivateKey())
+                .recoverySalt(user.getRecoverySalt())
+                .emailVerifiedAt(user.getEmailVerifiedAt())
                 .lockedUntil(user.getLockedUntil())
                 .failedLoginAttempts(user.getFailedLoginAttempts())
                 .createdAt(user.getCreatedAt())
@@ -45,9 +44,13 @@ public class UserEntityMapper {
                 .firstName(entity.getFirstName())
                 .lastName(entity.getLastName())
                 .email(entity.getEmail())
+                .oAuthProvider(toDomainProvider(entity.getOAuthProvider()))
+                .oAuthId(entity.getOAuthId())
+                .profilePictureUrl(entity.getProfilePictureUrl())
+                .accountPublicKey(entity.getAccountPublicKey())
+                .recoveryEncryptedPrivateKey(entity.getRecoveryEncryptedPrivateKey())
+                .recoverySalt(entity.getRecoverySalt())
                 .emailVerifiedAt(entity.getEmailVerifiedAt())
-                .passwordHash(entity.getPasswordHash())
-//                .active(entity.isActive())
                 .lockedUntil(entity.getLockedUntil())
                 .failedLoginAttempts(entity.getFailedLoginAttempts())
                 .createdAt(entity.getCreatedAt())
@@ -55,5 +58,27 @@ public class UserEntityMapper {
                 .lastLoginAt(entity.getLastLoginAt())
                 .deletedAt(entity.getDeletedAt())
                 .build();
+    }
+
+    private UserEntity.OAuthProviderEntity toEntityProvider(OAuthProvider provider) {
+        if (provider == null) {
+            return null;
+        }
+        return switch (provider) {
+            case GOOGLE -> UserEntity.OAuthProviderEntity.GOOGLE;
+            case GITHUB -> UserEntity.OAuthProviderEntity.GITHUB;
+            case MICROSOFT -> UserEntity.OAuthProviderEntity.MICROSOFT;
+        };
+    }
+
+    private OAuthProvider toDomainProvider(UserEntity.OAuthProviderEntity provider) {
+        if (provider == null) {
+            return null;
+        }
+        return switch (provider) {
+            case GOOGLE -> OAuthProvider.GOOGLE;
+            case GITHUB -> OAuthProvider.GITHUB;
+            case MICROSOFT -> OAuthProvider.MICROSOFT;
+        };
     }
 }

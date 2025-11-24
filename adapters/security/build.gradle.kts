@@ -14,6 +14,8 @@ dependencies {
     implementation("org.springframework.security:spring-security-core")
 
     implementation("org.springframework:spring-context")
+    implementation("org.springframework:spring-web")
+    implementation("org.springframework.boot:spring-boot-autoconfigure")
 
     implementation("org.springframework.security:spring-security-crypto")
 
@@ -22,6 +24,9 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-api:0.13.0")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.13.0")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.13.0")
+
+    // Jackson for OAuth token parsing
+    implementation("com.fasterxml.jackson.core:jackson-databind")
 
     implementation("de.mkammerer:argon2-jvm:2.12")
 

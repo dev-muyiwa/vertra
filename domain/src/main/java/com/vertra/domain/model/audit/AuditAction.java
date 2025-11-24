@@ -14,6 +14,19 @@ public enum AuditAction {
     EMAIL_VERIFIED("email.verified"),
     USER_PASSWORD_CHANGED("user.password.changed"),
 
+    OAUTH_LOGIN_STARTED("oauth.login.started"),
+    OAUTH_LOGIN_SUCCESS("oauth.login.success"),
+    OAUTH_LOGIN_FAILED("oauth.login.failed"),
+    OAUTH_ACCOUNT_LINKED("oauth.account.linked"),
+    OAUTH_ACCOUNT_UNLINKED("oauth.account.unlinked"),
+
+    DEVICE_REGISTERED("device.registered"),
+    DEVICE_RECOVERY_INITIATED("device.recovery.initiated"),
+    DEVICE_RECOVERY_SUCCESS("device.recovery.success"),
+    DEVICE_RECOVERY_FAILED("device.recovery.failed"),
+    DEVICE_REVOKED("device.revoked"),
+    DEVICE_TRUSTED("device.trusted"),
+
     ORG_CREATED("org.created"),
     ORG_UPDATED("org.updated"),
     ORG_DELETED("org.deleted"),

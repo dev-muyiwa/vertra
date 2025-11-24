@@ -16,7 +16,8 @@ import java.util.UUID;
 @Table(
         name = "users",
         indexes = {
-                @Index(name = "idx_users_email", columnList = "email")
+                @Index(name = "idx_users_email", columnList = "email"),
+                @Index(name = "idx_users_oauth", columnList = "oauth_provider, oauth_id")
         }
 )
 @Builder(toBuilder = true)
@@ -29,20 +30,35 @@ public class UserEntity {
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
-    @Column(name = "first_name", nullable = false)
+    @Column(name = "first_name")
     private String firstName;
 
-    @Column(name = "last_name", nullable = false)
+    @Column(name = "last_name")
     private String lastName;
 
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "password_hash", nullable = false)
-    private String passwordHash;
+    // OAuth fields
+    @Column(name = "oauth_provider", length = 20)
+    @Enumerated(EnumType.STRING)
+    private OAuthProviderEntity oAuthProvider;
 
-    @Column(name = "has_accepted_terms", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
-    private boolean hasAcceptedTerms;
+    @Column(name = "oauth_id")
+    private String oAuthId;
+
+    @Column(name = "profile_picture_url", length = 500)
+    private String profilePictureUrl;
+
+    // Zero-knowledge encryption fields
+    @Column(name = "account_public_key", columnDefinition = "TEXT")
+    private String accountPublicKey;
+
+    @Column(name = "recovery_encrypted_private_key", columnDefinition = "TEXT")
+    private String recoveryEncryptedPrivateKey;
+
+    @Column(name = "recovery_salt")
+    private String recoverySalt;
 
     @Column(name = "email_verified_at")
     private Instant emailVerifiedAt;
@@ -66,4 +82,8 @@ public class UserEntity {
 
     @Column(name = "deleted_at")
     private Instant deletedAt;
+
+    public enum OAuthProviderEntity {
+        GOOGLE, GITHUB, MICROSOFT
+    }
 }
