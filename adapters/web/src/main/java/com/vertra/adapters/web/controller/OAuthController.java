@@ -55,6 +55,7 @@ public class OAuthController {
                 request.redirectUri()
         );
 
+
         var response = new OAuthAuthorizeResponse(
                 authorizationUrl,
                 state,
