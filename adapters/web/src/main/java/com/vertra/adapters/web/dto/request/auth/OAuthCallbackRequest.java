@@ -1,11 +1,16 @@
 package com.vertra.adapters.web.dto.request.auth;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 
 public record OAuthCallbackRequest(
-        @NotBlank(message = "Access token is required")
-        String accessToken,
+        @NotBlank(message = "Authorization code is required")
+        String code,
+
+        @NotBlank(message = "State is required")
+        String state,
+
+        @NotBlank(message = "Redirect URI is required")
+        String redirectUri,
 
         String deviceId,
 
