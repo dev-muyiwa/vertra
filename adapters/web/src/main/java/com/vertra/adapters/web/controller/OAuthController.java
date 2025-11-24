@@ -1,14 +1,18 @@
 package com.vertra.adapters.web.controller;
 
 import com.vertra.adapters.web.dto.request.auth.CompleteOAuthSetupRequest;
+import com.vertra.adapters.web.dto.request.auth.OAuthAuthorizeRequest;
 import com.vertra.adapters.web.dto.request.auth.OAuthCallbackRequest;
 import com.vertra.adapters.web.dto.request.auth.RecoverDeviceRequest;
+import com.vertra.adapters.web.dto.response.auth.OAuthAuthorizeResponse;
 import com.vertra.adapters.web.dto.response.auth.OAuthCallbackResponse;
 import com.vertra.adapters.web.dto.response.auth.OAuthSetupResponse;
 import com.vertra.adapters.web.dto.response.common.ApiResponse;
 import com.vertra.application.port.in.auth.CompleteOAuthSetupUseCase;
 import com.vertra.application.port.in.auth.OAuthCallbackUseCase;
 import com.vertra.application.port.in.auth.RecoverDeviceUseCase;
+import com.vertra.application.port.out.oauth.OAuthAuthorizationPort;
+import com.vertra.domain.model.user.OAuthProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +30,39 @@ public class OAuthController {
     private final OAuthCallbackUseCase oAuthCallbackUseCase;
     private final CompleteOAuthSetupUseCase completeOAuthSetupUseCase;
     private final RecoverDeviceUseCase recoverDeviceUseCase;
+    private final OAuthAuthorizationPort oAuthAuthorizationPort;
+
+    /**
+     * Get the OAuth authorization URL for the specified provider.
+     * Frontend should redirect the user to this URL to start the OAuth flow.
+     *
+     * @param provider The OAuth provider (google, github, microsoft)
+     * @param request Contains the redirect URI where the OAuth provider should redirect after auth
+     * @return Authorization URL with state parameter for CSRF protection
+     */
+    @PostMapping("/{provider}/authorize")
+    public ResponseEntity<ApiResponse<OAuthAuthorizeResponse>> authorize(
+            @PathVariable String provider,
+            @Valid @RequestBody OAuthAuthorizeRequest request
+    ) {
+        log.info("Generating OAuth authorization URL for provider: {}", provider);
+
+        OAuthProvider oauthProvider = OAuthProvider.fromString(provider);
+        String state = oAuthAuthorizationPort.generateState();
+        String authorizationUrl = oAuthAuthorizationPort.generateAuthorizationUrl(
+                oauthProvider,
+                state,
+                request.redirectUri()
+        );
+
+        var response = new OAuthAuthorizeResponse(
+                authorizationUrl,
+                state,
+                provider.toLowerCase()
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(response, "Authorization URL generated"));
+    }
 
     /**
      * Handle OAuth callback from provider.
