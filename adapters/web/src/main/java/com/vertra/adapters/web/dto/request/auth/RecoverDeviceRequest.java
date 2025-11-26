@@ -13,8 +13,5 @@ public record RecoverDeviceRequest(
         String deviceName,
 
         @NotBlank(message = "Device fingerprint is required")
-        String deviceFingerprint,
-
-        @NotBlank(message = "Encrypted private key is required")
-        String encryptedPrivateKey
+        String deviceFingerprint
 ) {}

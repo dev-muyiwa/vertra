@@ -30,9 +30,19 @@ public interface TokenGenerationPort {
     String generateTemporaryToken(String email, OAuthProvider provider, String providerId, int expirySeconds);
 
     /**
+     * Generates a temporary token for OAuth setup with user and device IDs.
+     */
+    String generateSetupToken(UUID userId, String deviceId, int expirySeconds);
+
+    /**
      * Validates and parses a temporary token.
      */
     TemporaryTokenClaims parseTemporaryToken(String token);
+
+    /**
+     * Validates and parses a setup token.
+     */
+    SetupTokenClaims parseSetupToken(String token);
 
     record TokenClaims(
             UUID userId,
@@ -47,6 +57,15 @@ public interface TokenGenerationPort {
             String email,
             OAuthProvider provider,
             String providerId,
+            Instant issuedAt,
+            Instant expiresAt,
+            boolean valid
+    ) {
+    }
+
+    record SetupTokenClaims(
+            UUID userId,
+            String deviceId,
             Instant issuedAt,
             Instant expiresAt,
             boolean valid

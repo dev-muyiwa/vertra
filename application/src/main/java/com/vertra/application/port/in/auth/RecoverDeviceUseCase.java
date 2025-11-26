@@ -10,7 +10,6 @@ public interface RecoverDeviceUseCase {
             String deviceId,  // Client-generated UUID
             String deviceName,  // "Chrome on MacBook Pro"
             String deviceFingerprint,
-            String encryptedPrivateKey,  // Account private key encrypted with new device's DEK
             String ipAddress,
             String userAgent
     ) {
@@ -27,9 +26,6 @@ public interface RecoverDeviceUseCase {
             if (deviceFingerprint == null || deviceFingerprint.isBlank()) {
                 throw new IllegalArgumentException("Device fingerprint is required");
             }
-            if (encryptedPrivateKey == null || encryptedPrivateKey.isBlank()) {
-                throw new IllegalArgumentException("Encrypted private key is required");
-            }
         }
     }
 
@@ -37,6 +33,8 @@ public interface RecoverDeviceUseCase {
             String accessToken,
             String refreshToken,
             int expiresIn,
+            String deviceId,  // Server-created device UUID (for client to know which device to update)
+            String recoveryEncryptedPrivateKey,  // New recovery encrypted private key
             UserInfo user
     ) {
         public record UserInfo(

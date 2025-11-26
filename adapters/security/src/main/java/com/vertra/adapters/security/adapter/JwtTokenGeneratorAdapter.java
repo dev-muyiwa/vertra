@@ -28,8 +28,11 @@ public class JwtTokenGeneratorAdapter implements TokenGenerationPort {
     private static final String CLAIM_EMAIL = "email";
     private static final String CLAIM_PROVIDER = "provider";
     private static final String CLAIM_PROVIDER_ID = "provider_id";
+    private static final String CLAIM_USER_ID = "user_id";
+    private static final String CLAIM_DEVICE_ID = "device_id";
     private static final String CLAIM_TOKEN_TYPE = "type";
     private static final String TOKEN_TYPE_TEMPORARY = "temporary";
+    private static final String TOKEN_TYPE_SETUP = "setup";
 
     private final SecretKey secretKey;
     private final String issuer;
@@ -107,6 +110,24 @@ public class JwtTokenGeneratorAdapter implements TokenGenerationPort {
     }
 
     @Override
+    public String generateSetupToken(UUID userId, String deviceId, int expirySeconds) {
+        Instant now = Instant.now();
+        Instant expiry = now.plusSeconds(expirySeconds);
+
+        return Jwts.builder()
+                .subject(userId.toString())
+                .id(Uuid.random().toString())
+                .issuer(issuer)
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(expiry))
+                .claim(CLAIM_USER_ID, userId.toString())
+                .claim(CLAIM_DEVICE_ID, deviceId)
+                .claim(CLAIM_TOKEN_TYPE, TOKEN_TYPE_SETUP)
+                .signWith(secretKey)
+                .compact();
+    }
+
+    @Override
     public TemporaryTokenClaims parseTemporaryToken(String token) {
         try {
             Claims claims = Jwts.parser()
@@ -174,6 +195,51 @@ public class JwtTokenGeneratorAdapter implements TokenGenerationPort {
         } catch (JwtException e) {
             log.error("JWT parsing failed", e);
             return new TokenClaims(null, null, null, null, false);
+        }
+    }
+
+    @Override
+    public SetupTokenClaims parseSetupToken(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            // Verify this is a setup token
+            String tokenType = claims.get(CLAIM_TOKEN_TYPE, String.class);
+            if (!TOKEN_TYPE_SETUP.equals(tokenType)) {
+                log.warn("Token is not a setup token");
+                return new SetupTokenClaims(null, null, null, null, false);
+            }
+
+            String userIdStr = claims.get(CLAIM_USER_ID, String.class);
+            String deviceId = claims.get(CLAIM_DEVICE_ID, String.class);
+
+            UUID userId = null;
+            if (userIdStr != null) {
+                try {
+                    userId = UUID.fromString(userIdStr);
+                } catch (IllegalArgumentException e) {
+                    log.warn("Invalid user ID in setup token: {}", userIdStr);
+                    return new SetupTokenClaims(null, null, null, null, false);
+                }
+            }
+
+            return new SetupTokenClaims(
+                    userId,
+                    deviceId,
+                    claims.getIssuedAt().toInstant(),
+                    claims.getExpiration().toInstant(),
+                    true
+            );
+        } catch (ExpiredJwtException e) {
+            log.warn("Setup token expired: {}", e.getMessage());
+            return new SetupTokenClaims(null, null, null, null, false);
+        } catch (JwtException e) {
+            log.error("Setup token parsing failed", e);
+            return new SetupTokenClaims(null, null, null, null, false);
         }
     }
 

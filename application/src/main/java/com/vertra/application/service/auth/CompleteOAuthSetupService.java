@@ -44,67 +44,55 @@ public class CompleteOAuthSetupService implements CompleteOAuthSetupUseCase {
 
         command.validate();
 
-        // Step 1: Validate and parse temporary token
-        TokenGenerationPort.TemporaryTokenClaims tokenClaims = tokenGenerator.parseTemporaryToken(command.temporaryToken());
+        // Step 1: Validate and parse setup token
+        TokenGenerationPort.SetupTokenClaims tokenClaims = tokenGenerator.parseSetupToken(command.temporaryToken());
         if (!tokenClaims.valid()) {
-            log.error("Invalid or expired temporary token");
+            log.error("Invalid or expired setup token");
             throw UnauthorizedException.invalidToken();
         }
 
-        String email = tokenClaims.email();
-        if (email == null || email.isBlank()) {
-            log.error("No email found in temporary token");
+        UUID userId = tokenClaims.userId();
+        String deviceId = tokenClaims.deviceId();
+
+        if (userId == null || deviceId == null) {
+            log.error("Missing user ID or device ID in setup token");
             throw UnauthorizedException.invalidToken();
         }
 
-        // Step 2: Check if user already exists (shouldn't, but verify)
-        if (userRepository.existsByEmail(new Email(email))) {
-            log.error("User already exists during setup: {}", email);
-            throw new IllegalStateException("User already exists");
-        }
+        // Step 2: Get existing user (should already exist from callback)
+        User user = userRepository.findUndeletedById(new com.vertra.domain.vo.Uuid(userId))
+                .orElseThrow(() -> {
+                    log.error("User not found during setup: {}", userId);
+                    return UnauthorizedException.invalidToken();
+                });
 
-        // Step 3: Create user with OAuth provider info from token
-        User user = User.builder()
-                .id(UUID.randomUUID())
-                .email(email)
-                .firstName(command.firstName())
-                .lastName(command.lastName())
-                .oAuthProvider(tokenClaims.provider())
-                .oAuthId(tokenClaims.providerId())
-                .profilePictureUrl(command.profilePictureUrl())
+        // Step 3: Update user with cryptographic keys
+        User updatedUser = user.toBuilder()
                 .accountPublicKey(command.accountPublicKey())
                 .recoveryEncryptedPrivateKey(command.recoveryEncryptedPrivateKey())
                 .recoverySalt(command.recoverySalt())
-                .emailVerifiedAt(Instant.now()) // OAuth users are verified
-                .failedLoginAttempts(0)
-                .createdAt(Instant.now())
                 .updatedAt(Instant.now())
-                .lastLoginAt(Instant.now())
                 .build();
 
-//        user.validateEmail();
-//        user.validateAccountPublicKey();
+//        updatedUser.validateEmail();
+//        updatedUser.validateAccountPublicKey();
 
-        User savedUser = userRepository.save(user);
+        User savedUser = userRepository.save(updatedUser);
 
-        log.info("User created: userId={}", savedUser.getId());
+        log.info("User keys updated: userId={}", savedUser.getId());
 
-        // Step 4: Create device
-        UserDevice device = UserDevice.builder()
-                .id(UUID.randomUUID())
-                .userId(savedUser.getId())
-                .deviceId(command.deviceId())
-                .deviceName(command.deviceName())
-                .deviceFingerprint(command.deviceFingerprint())
-                .encryptedPrivateKey(command.encryptedPrivateKey())
-                .isTrusted(true)  // First device is trusted by default
-                .createdAt(Instant.now())
-                .lastUsedAt(Instant.now())
-                .build();
+        // Step 4: Get existing device and update with encrypted private key
+        UserDevice device = deviceRepository.findByUserIdAndDeviceId(savedUser.getId(), deviceId)
+                .orElseThrow(() -> {
+                    log.error("Device not found during setup: userId={}, deviceId={}", savedUser.getId(), deviceId);
+                    return UnauthorizedException.invalidToken();
+                });
 
-        UserDevice savedDevice = deviceRepository.save(device);
+        UserDevice updatedDevice = device.withEncryptedPrivateKey(command.encryptedPrivateKey());
 
-        log.info("Device registered: deviceId={}", savedDevice.getDeviceId());
+        UserDevice savedDevice = deviceRepository.save(updatedDevice);
+
+        log.info("Device updated with encrypted private key: deviceId={}", savedDevice.getDeviceId());
 
         // Step 5: Generate JWT tokens
         String accessToken = tokenGenerator.generateAccessToken(
@@ -117,7 +105,6 @@ public class CompleteOAuthSetupService implements CompleteOAuthSetupUseCase {
 
         // Step 6: Create session
         UserSession session = UserSession.builder()
-                .id(UUID.randomUUID())
                 .userId(savedUser.getId())
                 .deviceId(UUID.fromString(savedDevice.getDeviceId()))
                 .sessionTokenHash(tokenHasher.hash(jti))
@@ -135,7 +122,7 @@ public class CompleteOAuthSetupService implements CompleteOAuthSetupUseCase {
 
         // Step 7: Audit log
         auditPort.log(
-                AuditAction.USER_CREATED,
+                AuditAction.OAUTH_LOGIN_SUCCESS,
                 null,
                 savedUser.getId(),
                 null,
@@ -148,32 +135,13 @@ public class CompleteOAuthSetupService implements CompleteOAuthSetupUseCase {
                 UUID.randomUUID(),
                 Map.of(
                         "device_id", savedDevice.getDeviceId(),
-                        "oauth_provider", savedUser.getOAuthProvider().name()
+                        "oauth_provider", savedUser.getOAuthProvider().name(),
+                        "setup_completed", true
                 ),
                 true,
-                "New user created via OAuth: " + savedUser.getId()
+                "OAuth setup completed for user: " + savedUser.getId()
         );
 
-        auditPort.log(
-                AuditAction.DEVICE_REGISTERED,
-                null,
-                savedUser.getId(),
-                null,
-                ActorType.USER,
-                null,
-                null,
-                null,
-                Inet6.parse(command.ipAddress()),
-                command.userAgent(),
-                UUID.randomUUID(),
-                Map.of(
-                        "device_id", savedDevice.getDeviceId(),
-                        "device_name", savedDevice.getDeviceName(),
-                        "first_device", true
-                ),
-                true,
-                "Device registered during OAuth setup: " + savedDevice.getDeviceId()
-        );
 
         // TODO: Create default organization
 
@@ -183,6 +151,7 @@ public class CompleteOAuthSetupService implements CompleteOAuthSetupUseCase {
                 accessToken,
                 refreshToken,
                 ACCESS_TOKEN_EXPIRY_SECONDS,
+                user.getRecoveryEncryptedPrivateKey(),
                 new CompleteOAuthSetupResponse.UserInfo(
                         savedUser.getId(),
                         savedUser.getEmail(),

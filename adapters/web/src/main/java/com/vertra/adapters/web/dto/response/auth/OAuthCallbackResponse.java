@@ -8,6 +8,7 @@ import java.util.UUID;
 public record OAuthCallbackResponse(
         String status,  // "new_user", "known_device", "recovery_required"
         String temporaryToken,  // For new_user and recovery_required
+        String deviceId,  // For new_user (server-generated device ID)
         String accessToken,  // For known_device
         String refreshToken,  // For known_device
         Integer expiresIn,  // For known_device
@@ -27,6 +28,7 @@ public record OAuthCallbackResponse(
 
     public static OAuthCallbackResponse newUser(
             String temporaryToken,
+            String deviceId,
             String email,
             String firstName,
             String lastName,
@@ -37,6 +39,7 @@ public record OAuthCallbackResponse(
         return new OAuthCallbackResponse(
                 "new_user",
                 temporaryToken,
+                deviceId,
                 null,
                 null,
                 null,
@@ -59,6 +62,7 @@ public record OAuthCallbackResponse(
         return new OAuthCallbackResponse(
                 "known_device",
                 null,
+                null,
                 accessToken,
                 refreshToken,
                 expiresIn,
@@ -78,6 +82,7 @@ public record OAuthCallbackResponse(
         return new OAuthCallbackResponse(
                 "recovery_required",
                 temporaryToken,
+                null,
                 null,
                 null,
                 null,

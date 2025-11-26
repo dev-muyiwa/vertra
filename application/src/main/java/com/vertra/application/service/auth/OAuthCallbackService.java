@@ -85,18 +85,50 @@ public class OAuthCallbackService implements OAuthCallbackUseCase {
     private OAuthCallbackResponse handleNewUser(OAuthUserInfo oauthInfo, OAuthCallbackCommand command) {
         log.info("New user registration via OAuth: email={}", oauthInfo.getEmail());
 
-        // Generate temporary token for completing setup (includes provider info)
-        String temporaryToken = tokenGenerator.generateTemporaryToken(
-                oauthInfo.getEmail(),
-                oauthInfo.getProvider(),
-                oauthInfo.getProviderId(),
+        // Create user account immediately
+        User user = User.builder()
+                .email(oauthInfo.getEmail())
+                .firstName(oauthInfo.getFirstName())
+                .lastName(oauthInfo.getLastName())
+                .oAuthProvider(oauthInfo.getProvider())
+                .oAuthId(oauthInfo.getProviderId())
+                .profilePictureUrl(oauthInfo.getProfilePictureUrl())
+                .emailVerifiedAt(Instant.now()) // OAuth users are verified
+                .failedLoginAttempts(0)
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
+                .lastLoginAt(Instant.now())
+                .build();
+
+        User savedUser = userRepository.save(user);
+        log.info("User created: userId={}", savedUser.getId());
+
+        // Create device (server-side generated device ID)
+        String deviceId = UUID.randomUUID().toString();
+        UserDevice device = UserDevice.builder()
+                .userId(savedUser.getId())
+                .deviceId(deviceId)
+                .deviceName(command.deviceName())
+                .deviceFingerprint(command.deviceFingerprint())
+                .isTrusted(true)  // First device is trusted by default
+                .createdAt(Instant.now())
+                .lastUsedAt(Instant.now())
+                .build();
+
+        UserDevice savedDevice = deviceRepository.save(device);
+        log.info("Device created: deviceId={}", savedDevice.getDeviceId());
+
+        // Generate setup token for completing setup (includes user ID and device ID)
+        String temporaryToken = tokenGenerator.generateSetupToken(
+                savedUser.getId(),
+                deviceId,
                 TEMPORARY_TOKEN_EXPIRY_SECONDS
         );
 
         auditPort.log(
-                AuditAction.OAUTH_LOGIN_STARTED,
+                AuditAction.USER_CREATED,
                 null,
-                null,
+                savedUser.getId(),
                 null,
                 ActorType.USER,
                 null,
@@ -108,10 +140,31 @@ public class OAuthCallbackService implements OAuthCallbackUseCase {
                 Map.of(
                         "provider", oauthInfo.getProvider().name(),
                         "email", oauthInfo.getEmail(),
-                        "new_user", true
+                        "oauth_id", oauthInfo.getProviderId()
                 ),
                 true,
-                "New user OAuth registration initiated for email: " + oauthInfo.getEmail()
+                "New user created via OAuth: " + savedUser.getId()
+        );
+
+        auditPort.log(
+                AuditAction.DEVICE_REGISTERED,
+                null,
+                savedUser.getId(),
+                null,
+                ActorType.USER,
+                null,
+                null,
+                null,
+                Inet6.parse(command.ipAddress()),
+                command.userAgent(),
+                UUID.randomUUID(),
+                Map.of(
+                        "device_id", savedDevice.getDeviceId(),
+                        "device_name", savedDevice.getDeviceName(),
+                        "first_device", true
+                ),
+                true,
+                "Device registered during OAuth callback: " + savedDevice.getDeviceId()
         );
 
         return new OAuthCallbackResponse.NewUserResponse(
@@ -121,6 +174,7 @@ public class OAuthCallbackService implements OAuthCallbackUseCase {
                 oauthInfo.getProfilePictureUrl(),
                 oauthInfo.getProvider(),
                 oauthInfo.getProviderId(),
+                deviceId,
                 temporaryToken
         );
     }
@@ -143,7 +197,6 @@ public class OAuthCallbackService implements OAuthCallbackUseCase {
 
         // Create session
         UserSession session = UserSession.builder()
-                .id(UUID.randomUUID())
                 .userId(user.getId())
                 .deviceId(UUID.fromString(device.getDeviceId()))
                 .sessionTokenHash(tokenHasher.hash(jti))
@@ -156,7 +209,7 @@ public class OAuthCallbackService implements OAuthCallbackUseCase {
                 .lastActivityAt(Instant.now())
                 .build();
 
-        sessionRepository.save(session);
+        UserSession savedSession = sessionRepository.save(session);
 
         // Update device last used
         UserDevice updatedDevice = device.recordUsage();
@@ -180,13 +233,13 @@ public class OAuthCallbackService implements OAuthCallbackUseCase {
                 UUID.randomUUID(),
                 Map.of(
                         "device_id", device.getDeviceId(),
-                        "session_id", session.getId()
+                        "session_id", savedSession.getId()
                 ),
                 true,
                 "OAuth login successful for user ID: " + user.getId()
         );
 
-        log.info("OAuth login successful: userId={}, sessionId={}", user.getId(), session.getId());
+        log.info("OAuth login successful: userId={}, sessionId={}", user.getId(), savedSession.getId());
 
         return new OAuthCallbackResponse.KnownDeviceResponse(
                 accessToken,

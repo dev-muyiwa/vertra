@@ -6,14 +6,8 @@ public interface CompleteOAuthSetupUseCase {
     CompleteOAuthSetupResponse execute(CompleteOAuthSetupCommand command);
 
     record CompleteOAuthSetupCommand(
-            String temporaryToken,  // From OAuth callback response
-            String firstName,
-            String lastName,
-            String profilePictureUrl,
+            String temporaryToken,  // From OAuth callback response (contains userId:deviceId)
             String accountPublicKey,  // RSA public key (Base64)
-            String deviceId,  // Client-generated UUID
-            String deviceName,  // "Chrome on MacBook Pro"
-            String deviceFingerprint,
             String encryptedPrivateKey,  // Account private key encrypted with device's DEK
             String recoveryEncryptedPrivateKey,  // Account private key encrypted with recovery key
             String recoverySalt,  // Salt for deriving recovery key
@@ -26,12 +20,6 @@ public interface CompleteOAuthSetupUseCase {
             }
             if (accountPublicKey == null || accountPublicKey.isBlank()) {
                 throw new IllegalArgumentException("Account public key is required");
-            }
-            if (deviceId == null || deviceId.isBlank()) {
-                throw new IllegalArgumentException("Device ID is required");
-            }
-            if (deviceName == null || deviceName.isBlank()) {
-                throw new IllegalArgumentException("Device name is required");
             }
             if (encryptedPrivateKey == null || encryptedPrivateKey.isBlank()) {
                 throw new IllegalArgumentException("Encrypted private key is required");
@@ -49,6 +37,7 @@ public interface CompleteOAuthSetupUseCase {
             String accessToken,
             String refreshToken,
             int expiresIn,
+            String recoveryEncryptedPrivateKey,  // New recovery encrypted private key
             UserInfo user
     ) {
         public record UserInfo(

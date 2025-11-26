@@ -43,7 +43,7 @@ public class UserDeviceEntity {
     private String deviceFingerprint;
 
     // Zero-knowledge: account private key encrypted with device's DEK
-    @Column(name = "encrypted_private_key", columnDefinition = "TEXT", nullable = false)
+    @Column(name = "encrypted_private_key", columnDefinition = "TEXT")
     private String encryptedPrivateKey;
 
     @Column(name = "is_trusted", nullable = false)

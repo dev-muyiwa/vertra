@@ -66,14 +66,13 @@ public class RecoverDeviceService implements RecoverDeviceUseCase {
                     return UnauthorizedException.invalidToken();
                 });
 
-        // Step 3: Register new device
+        // Step 3: Register new device (without encrypted private key yet)
         UserDevice device = UserDevice.builder()
-                .id(UUID.randomUUID())
                 .userId(user.getId())
                 .deviceId(command.deviceId())
                 .deviceName(command.deviceName())
                 .deviceFingerprint(command.deviceFingerprint())
-                .encryptedPrivateKey(command.encryptedPrivateKey())
+                .encryptedPrivateKey(null)  // Will be set later via POST /devices
                 .isTrusted(false)  // New recovered device is not trusted by default
                 .createdAt(Instant.now())
                 .lastUsedAt(Instant.now())
@@ -90,7 +89,6 @@ public class RecoverDeviceService implements RecoverDeviceUseCase {
 
         // Step 5: Create session
         UserSession session = UserSession.builder()
-                .id(UUID.randomUUID())
                 .userId(user.getId())
                 .deviceId(UUID.fromString(savedDevice.getDeviceId()))
                 .sessionTokenHash(tokenHasher.hash(jti))
@@ -102,7 +100,7 @@ public class RecoverDeviceService implements RecoverDeviceUseCase {
                 .lastActivityAt(Instant.now())
                 .build();
 
-        sessionRepository.save(session);
+        UserSession savedSession = sessionRepository.save(session);
 
         // Step 6: Update user last login
         User updatedUser = user.recordLogin();
@@ -135,6 +133,8 @@ public class RecoverDeviceService implements RecoverDeviceUseCase {
                 accessToken,
                 refreshToken,
                 ACCESS_TOKEN_EXPIRY_SECONDS,
+                savedDevice.getDeviceId(),
+                user.getRecoveryEncryptedPrivateKey(),
                 new RecoverDeviceResponse.UserInfo(
                         user.getId(),
                         user.getEmail(),

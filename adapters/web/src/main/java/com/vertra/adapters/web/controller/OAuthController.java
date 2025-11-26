@@ -122,6 +122,7 @@ public class OAuthController {
             case OAuthCallbackUseCase.OAuthCallbackResponse.NewUserResponse r ->
                     OAuthCallbackResponse.newUser(
                             r.temporaryToken(),
+                            r.deviceId(),
                             r.email(),
                             r.firstName(),
                             r.lastName(),
@@ -166,13 +167,7 @@ public class OAuthController {
 
         var command = new CompleteOAuthSetupUseCase.CompleteOAuthSetupCommand(
                 request.temporaryToken(),
-                request.firstName(),
-                request.lastName(),
-                request.profilePictureUrl(),
                 request.accountPublicKey(),
-                request.deviceId(),
-                request.deviceName(),
-                request.deviceFingerprint(),
                 request.encryptedPrivateKey(),
                 request.recoveryEncryptedPrivateKey(),
                 request.recoverySalt(),
@@ -186,6 +181,8 @@ public class OAuthController {
                 result.accessToken(),
                 result.refreshToken(),
                 result.expiresIn(),
+                null,  // No deviceId for complete-setup (device already known)
+                null,
                 new OAuthSetupResponse.UserInfo(
                         result.user().id(),
                         result.user().email(),
@@ -217,7 +214,6 @@ public class OAuthController {
                 request.deviceId(),
                 request.deviceName(),
                 request.deviceFingerprint(),
-                request.encryptedPrivateKey(),
                 getClientIp(httpRequest),
                 httpRequest.getHeader("User-Agent")
         );
@@ -228,6 +224,8 @@ public class OAuthController {
                 result.accessToken(),
                 result.refreshToken(),
                 result.expiresIn(),
+                result.deviceId(),
+                result.recoveryEncryptedPrivateKey(),
                 new OAuthSetupResponse.UserInfo(
                         result.user().id(),
                         result.user().email(),

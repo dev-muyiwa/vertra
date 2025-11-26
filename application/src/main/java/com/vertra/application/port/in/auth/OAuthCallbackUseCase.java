@@ -49,6 +49,7 @@ public interface OAuthCallbackUseCase {
                 String profilePictureUrl,
                 OAuthProvider provider,
                 String providerId,
+                String deviceId,  // Server-generated device ID
                 String temporaryToken  // Short-lived token to complete setup
         ) implements OAuthCallbackResponse {}
 
