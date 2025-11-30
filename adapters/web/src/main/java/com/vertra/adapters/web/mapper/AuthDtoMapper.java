@@ -1,12 +1,14 @@
 package com.vertra.adapters.web.mapper;
 
 import com.vertra.adapters.web.dto.request.auth.LoginUserRequest;
+import com.vertra.adapters.web.dto.request.auth.RefreshTokenRequest;
 import com.vertra.adapters.web.dto.request.auth.RegisterUserRequest;
 import com.vertra.adapters.web.dto.request.auth.StartEmailVerificationRequest;
 import com.vertra.adapters.web.dto.request.auth.VerifyEmailRequest;
 import com.vertra.adapters.web.dto.response.auth.LoginUserResponse;
 import com.vertra.adapters.web.dto.response.auth.RegisterUserResponse;
 import com.vertra.application.port.in.auth.LoginUserUseCase;
+import com.vertra.application.port.in.auth.RefreshTokenUseCase;
 import com.vertra.application.port.in.auth.RegisterUserUseCase;
 import com.vertra.application.port.in.auth.StartEmailVerificationUseCase;
 import com.vertra.application.port.in.auth.VerifyEmailUseCase;
@@ -76,6 +78,28 @@ public class AuthDtoMapper {
                 request.token(),
                 Inet6.parse(ipAddress),
                 userAgent
+        );
+    }
+
+    public RefreshTokenUseCase.RefreshTokenCommand toRefreshTokenCommand(
+            RefreshTokenRequest request,
+            String ipAddress,
+            String userAgent
+    ) {
+        return new RefreshTokenUseCase.RefreshTokenCommand(
+                request.refreshToken(),
+                Inet6.parse(ipAddress),
+                userAgent
+        );
+    }
+
+    public com.vertra.adapters.web.dto.response.auth.RefreshTokenResponse toRefreshTokenResponse(
+            RefreshTokenUseCase.RefreshTokenResponse result
+    ) {
+        return new com.vertra.adapters.web.dto.response.auth.RefreshTokenResponse(
+                result.accessToken(),
+                result.refreshToken(),
+                result.expiresIn()
         );
     }
 }

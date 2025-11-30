@@ -1,14 +1,17 @@
 package com.vertra.adapters.web.controller;
 
 import com.vertra.adapters.web.dto.request.auth.LoginUserRequest;
+import com.vertra.adapters.web.dto.request.auth.RefreshTokenRequest;
 import com.vertra.adapters.web.dto.request.auth.RegisterUserRequest;
 import com.vertra.adapters.web.dto.request.auth.StartEmailVerificationRequest;
 import com.vertra.adapters.web.dto.request.auth.VerifyEmailRequest;
 import com.vertra.adapters.web.dto.response.auth.LoginUserResponse;
+import com.vertra.adapters.web.dto.response.auth.RefreshTokenResponse;
 import com.vertra.adapters.web.dto.response.auth.RegisterUserResponse;
 import com.vertra.adapters.web.dto.response.common.ApiResponse;
 import com.vertra.adapters.web.mapper.AuthDtoMapper;
 import com.vertra.application.port.in.auth.LoginUserUseCase;
+import com.vertra.application.port.in.auth.RefreshTokenUseCase;
 import com.vertra.application.port.in.auth.RegisterUserUseCase;
 import com.vertra.application.port.in.auth.StartEmailVerificationUseCase;
 import com.vertra.application.port.in.auth.VerifyEmailUseCase;
@@ -31,6 +34,7 @@ public class AuthController {
     private final LoginUserUseCase loginUserUseCase;
     private final StartEmailVerificationUseCase startEmailVerificationUseCase;
     private final VerifyEmailUseCase verifyEmailUseCase;
+    private final RefreshTokenUseCase refreshTokenUseCase;
 
     private final AuthDtoMapper mapper;
 
@@ -90,6 +94,23 @@ public class AuthController {
         verifyEmailUseCase.execute(cmd);
         return ResponseEntity
                 .ok(ApiResponse.success(null, "Account verified successfully"));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<RefreshTokenResponse>> refresh(
+            @Valid @RequestBody RefreshTokenRequest data,
+            HttpServletRequest req
+    ) {
+        var cmd = mapper.toRefreshTokenCommand(
+                data,
+                getClientIp(req),
+                req.getHeader("User-Agent")
+        );
+        var result = refreshTokenUseCase.execute(cmd);
+        var res = mapper.toRefreshTokenResponse(result);
+
+        return ResponseEntity
+                .ok(ApiResponse.success(res, "Token refreshed successfully"));
     }
 
     //    TODO("Move to a utility class that would be reusable across controllers")
