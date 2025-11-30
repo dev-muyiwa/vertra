@@ -8,15 +8,11 @@ public interface CreateOrganizationUseCase {
 
     record CreateOrganizationCommand(
             String name,
-            String slug,
             Uuid currentUserId
     ) {
         public void validate() {
             if (name == null || name.isBlank()) {
                 throw new IllegalArgumentException("Organization name is required");
-            }
-            if (slug == null || slug.isBlank()) {
-                throw new IllegalArgumentException("Slug is required");
             }
             if (currentUserId == null) {
                 throw new IllegalArgumentException("User ID is required");
