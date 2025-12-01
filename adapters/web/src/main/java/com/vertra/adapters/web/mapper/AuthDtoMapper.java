@@ -88,6 +88,7 @@ public class AuthDtoMapper {
     ) {
         return new RefreshTokenUseCase.RefreshTokenCommand(
                 request.refreshToken(),
+                request.deviceId(),
                 Inet6.parse(ipAddress),
                 userAgent
         );

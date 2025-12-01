@@ -29,6 +29,13 @@ public interface JpaUserSessionRepository extends JpaRepository<UserSessionEntit
     @Query("SELECT s FROM UserSessionEntity s WHERE s.userId = :userId ORDER BY s.createdAt DESC")
     List<UserSessionEntity> findByUserId(@Param("userId") UUID userId);
 
+    @Query("SELECT s FROM UserSessionEntity s WHERE s.userId = :userId AND s.deviceId = :deviceId AND s.revokedAt IS NULL AND s.expiresAt > :now ORDER BY s.createdAt DESC")
+    List<UserSessionEntity> findActiveByUserIdAndDeviceId(
+            @Param("userId") UUID userId,
+            @Param("deviceId") UUID deviceId,
+            @Param("now") Instant now
+    );
+
     @Modifying
     @Query("UPDATE UserSessionEntity s SET s.revokedAt = :revokedAt WHERE s.userId = :userId AND s.revokedAt IS NULL")
     void revokeAllForUser(@Param("userId") UUID userId, @Param("revokedAt") Instant revokedAt);

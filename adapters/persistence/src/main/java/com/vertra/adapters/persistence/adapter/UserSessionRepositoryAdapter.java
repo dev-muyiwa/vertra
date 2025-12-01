@@ -11,8 +11,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -44,7 +46,8 @@ public class UserSessionRepositoryAdapter implements UserSessionRepository {
 
     @Override
     public Optional<UserSession> findByRefreshTokenHash(HashedToken refreshTokenHash) {
-        return Optional.empty();
+        return jpaRepo.findByRefreshTokenHash(refreshTokenHash.value())
+                .map(mapper::toDomain);
     }
 
     @Override
@@ -55,6 +58,14 @@ public class UserSessionRepositoryAdapter implements UserSessionRepository {
     @Override
     public List<UserSession> findByUserId(Uuid userId) {
         return List.of();
+    }
+
+    @Override
+    public List<UserSession> findActiveByUserIdAndDeviceId(Uuid userId, Uuid deviceId) {
+        return jpaRepo.findActiveByUserIdAndDeviceId(userId.value(), deviceId.value(), Instant.now())
+                .stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
     }
 
     @Override

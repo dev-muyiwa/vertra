@@ -21,6 +21,8 @@ public interface UserSessionRepository {
 
     List<UserSession> findByUserId(Uuid userId);
 
+    List<UserSession> findActiveByUserIdAndDeviceId(Uuid userId, Uuid deviceId);
+
     void revokeAllForUser(Uuid userId);
 
     void deleteExpiredSessions();

@@ -52,7 +52,7 @@ public class SecurityConfig {
                 )
                 .authenticationProvider(provider)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/auth/register", "/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/register", "/auth/login", "/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/oauth/*/authorize").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/oauth/*/callback").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/oauth/complete-setup").permitAll()
@@ -76,11 +76,10 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:3000",
-                "http://localhost:5173",
-                "https://vertra.app",
-                "https://*.vertra.app"
+        configuration.setAllowedOriginPatterns(Arrays.asList(
+                "http://localhost:*",
+                "https://vertra.vercel.app",
+                "https://*.vercel.app"
         ));
 
         configuration.setAllowedMethods(Arrays.asList(
@@ -91,7 +90,8 @@ public class SecurityConfig {
                 "Authorization",
                 "Content-Type",
                 "X-Request-ID",
-                "X-Device-Fingerprint"
+                "X-Device-Fingerprint",
+                "ngrok-skip-browser-warning"
         ));
 
         configuration.setExposedHeaders(Arrays.asList(
